@@ -1,5 +1,6 @@
 package tutorial;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
@@ -8,13 +9,16 @@ import javax.swing.table.TableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
+import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -40,6 +44,10 @@ class Country {
         return flag;
     }
 
+    public void setFlag(BufferedImage f) {
+        this.flag = f;
+    }
+
     public URI getWiki() {
         return URI.create("https://pl.wikipedia.org/wiki/" + name.replace(" ", "_"));
     }
@@ -48,6 +56,7 @@ class Country {
         this.name = name;
         this.code = code;
     }
+
 }
 
 class CountryTableModel extends AbstractTableModel {
@@ -63,7 +72,8 @@ class CountryTableModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return data.get(rowIndex).getFlag();
+                BufferedImage img = data.get(rowIndex).getFlag();
+                return new ImageIcon(img);
             case 1:
                 return data.get(rowIndex).getName();
             case 2:
@@ -87,6 +97,22 @@ class CountryTableModel extends AbstractTableModel {
     public void addRow(Country c) {
         data.add(c);
     }
+
+    @Override
+    public Class<?> getColumnClass(int column) {
+        switch (column) {
+            case 0:
+                return ImageIcon.class;
+            case 1:
+                return String.class;
+            case 2:
+                return String.class;
+            // add more columns as needed
+            default:
+                return Object.class;
+        }
+    }
+
 }
 
 public class Tutorial {
@@ -159,6 +185,19 @@ public class Tutorial {
             e.printStackTrace();
         }
 
+        try {
+            for (Country c : countries) {
+                HttpRequest req = HttpRequest.newBuilder()
+                        .uri(URI.create("https://flagcdn.com/w80/" + c.getCode() + ".png"))
+                        .timeout(Duration.ofSeconds(2)).build();
+                HttpResponse<byte[]> res = client.sendAsync(req, BodyHandlers.ofByteArray()).get();
+                BufferedImage img = ImageIO.read(new ByteArrayInputStream(res.body()));
+                c.setFlag(img);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
         // === SECTION 5: JTable ===
 
         CountryTableModel model = new CountryTableModel();
@@ -166,6 +205,7 @@ public class Tutorial {
         for (Country c : countries) {
             model.addRow(c);
         }
+        table.setRowHeight(90);
         JScrollPane tableScroll = new JScrollPane(table);
         frame.add(tableScroll, BorderLayout.CENTER);
 
