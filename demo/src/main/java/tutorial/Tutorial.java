@@ -78,7 +78,7 @@ class CountryTableModel extends AbstractTableModel {
             case 1:
                 return data.get(rowIndex).getName();
             case 2:
-                return data.get(rowIndex).getWiki();
+                return "Klinknij aby przejść do artykułu";
             default:
                 break;
         }
@@ -112,6 +112,10 @@ class CountryTableModel extends AbstractTableModel {
             default:
                 return Object.class;
         }
+    }
+
+    public Country getRowData(int n) {
+        return data.get(n);
     }
 
 }
@@ -217,7 +221,9 @@ public class Tutorial {
                         if (Desktop.isDesktopSupported()) {
                             Desktop desktop = Desktop.getDesktop();
                             if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                                desktop.browse((URI) table.getValueAt(row, col));
+                                CountryTableModel tableModel = (CountryTableModel) table.getModel();
+                                Country country = tableModel.getRowData(row);
+                                desktop.browse(country.getWiki());
                             }
                         }
                     } catch (IOException | InternalError e) {
