@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -206,6 +207,26 @@ public class Tutorial {
             model.addRow(c);
         }
         table.setRowHeight(90);
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = table.rowAtPoint(evt.getPoint());
+                int col = table.columnAtPoint(evt.getPoint());
+                if (col == 2) {
+                    try {
+                        if (Desktop.isDesktopSupported()) {
+                            Desktop desktop = Desktop.getDesktop();
+                            if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                                desktop.browse((URI) table.getValueAt(row, col));
+                            }
+                        }
+                    } catch (IOException | InternalError e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        });
         JScrollPane tableScroll = new JScrollPane(table);
         frame.add(tableScroll, BorderLayout.CENTER);
 
