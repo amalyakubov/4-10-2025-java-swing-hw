@@ -75,6 +75,11 @@ class CountryTableModel extends AbstractTableModel {
     }
 
     @Override
+    public String getColumnName(int column) {
+        return columnNames[column];
+    }
+
+    @Override
     public int getRowCount() {
         return data.size();
     }
