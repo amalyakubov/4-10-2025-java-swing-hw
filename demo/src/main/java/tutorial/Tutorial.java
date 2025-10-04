@@ -1,9 +1,14 @@
 package tutorial;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -35,9 +40,47 @@ class Country {
         return flag;
     }
 
+    public URI getWiki() {
+        return URI.create("https://pl.wikipedia.org/wiki/" + name.replace(" ", "_"));
+    }
+
     Country(String name, String code) {
         this.name = name;
         this.code = code;
+    }
+}
+
+class CountryTableModel extends AbstractTableModel {
+    private String[] columnNames = { "Flaga", "Państwo", "Link do artykułu" };
+    private ArrayList<Country> data = new ArrayList<Country>();
+
+    @Override
+    public int getColumnCount() {
+        return columnNames.length;
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        switch (columnIndex) {
+            case 0:
+                return data.get(rowIndex).getFlag();
+            case 1:
+                return data.get(rowIndex).getName();
+            case 2:
+                return data.get(rowIndex).getWiki();
+            default:
+                break;
+        }
+        return columnIndex;
+    }
+
+    @Override
+    public int getRowCount() {
+        return data.size();
+    }
+
+    public void addRow(Country c) {
+        data.add(c);
     }
 }
 
@@ -112,14 +155,12 @@ public class Tutorial {
         }
 
         // === SECTION 5: JTable ===
-        String[] colNames = { "Flaga", "Kraj" };
-        Object[][] data = {
-                { "Jan", 20 },
-                { "Anna", 25 },
-                { "Piotr", 30 }
-        };
 
-        JTable table = new JTable(data, colNames);
+        CountryTableModel model = new CountryTableModel();
+        JTable table = new JTable(model);
+        for (Country c : countries) {
+            model.addRow(c);
+        }
         JScrollPane tableScroll = new JScrollPane(table);
         frame.add(tableScroll, BorderLayout.CENTER);
 
