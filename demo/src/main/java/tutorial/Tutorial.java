@@ -74,7 +74,11 @@ class CountryTableModel extends AbstractTableModel {
         switch (columnIndex) {
             case 0:
                 BufferedImage img = data.get(rowIndex).getFlag();
-                return new ImageIcon(img);
+                if (img != null) {
+                    return new ImageIcon(img);
+                } else {
+                    return null;
+                }
             case 1:
                 return data.get(rowIndex).getName();
             case 2:
@@ -136,26 +140,6 @@ public class Tutorial {
 
         // === SECTION 1: Podstawowe przyciski i pola tekstowe ===
         JPanel basicPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-        // JButton z ActionListener
-        JButton button = new JButton("Kliknij mnie");
-        button.addActionListener(_ -> JOptionPane.showMessageDialog(frame, "Kliknięto przycisk!"));
-        basicPanel.add(button);
-
-        // JTextField z KeyListener
-        JTextField textField = new JTextField(15);
-        textField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    JOptionPane.showMessageDialog(frame, "Wpisano: " + textField.getText());
-                }
-            }
-        });
-        basicPanel.add(new JLabel("Pole tekstowe:"));
-        basicPanel.add(textField);
-
-        frame.add(basicPanel, BorderLayout.SOUTH);
 
         ArrayList<Country> countries = new ArrayList<Country>();
 
@@ -235,6 +219,16 @@ public class Tutorial {
         });
         JScrollPane tableScroll = new JScrollPane(table);
         frame.add(tableScroll, BorderLayout.CENTER);
+        // JButton z ActionListener
+        JButton button = new JButton("Dodaj kraj");
+        button.addActionListener(_ -> {
+            String panstwo = JOptionPane.showInputDialog(frame, "Wpisz nazwę państwa:");
+            model.addRow(new Country(panstwo, ""));
+
+        });
+        basicPanel.add(button);
+
+        frame.add(basicPanel, BorderLayout.SOUTH);
 
         frame.setVisible(true);
     }
